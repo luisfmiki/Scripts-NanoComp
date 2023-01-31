@@ -1,2 +1,7 @@
 .vscode
-.txt
+*.txt
+NanomagneticLogic/*.txt
+SiliconDanglingBonds/*.txt
+*.xml
+NanomagneticLogic/*.xml
+SiliconDanglingBonds/*.xml

@@ -91,7 +91,6 @@ projpwd=${configinfo[1]}/$projectDir
 plotpwd=${configinfo[2]}
 ############### end of file path extracting #####################
 
-
 ############### setting the inputs in the xml file ##############
 if [ -n "$simTime" ]
 then
@@ -101,7 +100,7 @@ else
     cp $projpwd/simulation.xml $projpwd/simulationTemp0.xml
 fi
 
-for(( i=0;i<$counter_in;i++)) {
+for (( i=0;i<$counter_in;i++ )) {
     sed -e "/<item name=\"Magnet_${input_mags[$i]}\">/,/<\/item>/ s/<property fixedMagnetization=\"false\"\/>/<property fixedMagnetization=\"true\"\/>/" \
     $projpwd/simulationTemp$i.xml > $projpwd/simulationTemp$[$i+1].xml
     rm $projpwd/simulationTemp$i.xml
@@ -111,23 +110,18 @@ getComb=`awk "NR==$counter_in" ./stpinfo.txt`
 
 for comb in $getComb
 do
-    if [ 2 -eq $counter_in ]
-    then
-        mag1=${comb:0:5}
-        mag2=${comb:5:5}
-
-        sed -e "/<item name=\"Magnet_${input_mags[0]}\">/,/<\/item>/ s/<property magnetization=\"0.99,0.141,0\"\/>/<property magnetization=\"0.141,${mag1},0\"\/>/;\
-        /<item name=\"Magnet_${input_mags[0]}\">/,/<\/item>/ s/<property magnetization=\"0.99,0.141,0,\"\/>/<property magnetization=\"0.141,${mag1},0\"\/>/" \
-        $projpwd/simulationTemp$counter_in.xml > $projpwd/simulation${comb}t.xml
-        sed -e "/<item name=\"Magnet_${input_mags[1]}\">/,/<\/item>/ s/<property magnetization=\"0.99,0.141,0\"\/>/<property magnetization=\"0.141,${mag2},0\"\/>/;\
-        /<item name=\"Magnet_${input_mags[1]}\">/,/<\/item>/ s/<property magnetization=\"0.99,0.141,0,\"\/>/<property magnetization=\"0.141,${mag2},0\"\/>/" \
-        $projpwd/simulation${comb}t.xml > $projpwd/simulation${comb}.xml
+    mag0=${comb:0:5}
+    sed -e "/<item name=\"Magnet_${input_mags[0]}\">/,/<\/item>/ s/<property magnetization=\"0.99,0.141,0\"\/>/<property magnetization=\"0.141,${mag0},0\"\/>/;\
+    /<item name=\"Magnet_${input_mags[0]}\">/,/<\/item>/ s/<property magnetization=\"0.99,0.141,0,\"\/>/<property magnetization=\"0.141,${mag0},0\"\/>/" \
+    $projpwd/simulationTemp$counter_in.xml > $projpwd/simulation${comb}t0.xml
+    for (( i=1;i<$counter_in;i++ )) {
+        mag=${comb:$[i*5]:5}
+        sed -e "/<item name=\"Magnet_${input_mags[$i]}\">/,/<\/item>/ s/<property magnetization=\"0.99,0.141,0\"\/>/<property magnetization=\"0.141,$mag,0\"\/>/;\
+        /<item name=\"Magnet_${input_mags[$i]}\">/,/<\/item>/ s/<property magnetization=\"0.99,0.141,0,\"\/>/<property magnetization=\"0.141,$mag,0\"\/>/" \
+        $projpwd/simulation${comb}t$[$i-1].xml > $projpwd/simulation${comb}t$i.xml
         
-        rm $projpwd/simulation${comb}t.xml
-    else
-        #ToDo: aprimorar codiga acima e programar para entradas com n>2
-        echo teste
-    fi
+        rm $projpwd/simulation${comb}t$[$i-1].xml
+    }
 done
 
 rm $projpwd/simulationTemp$counter_in.xml
@@ -149,8 +143,8 @@ fi
 
 for comb in $getComb
 do
-    $nmlpwd/nmlsim $projpwd/simulation${comb}.xml $projpwd/simulation.csv
-    python3 $nmlpwd/chartToFile.py $projpwd/simulation.csv $projpwd/bashSims/$comb.png ${output_mags[*]}
+    $nmlpwd/nmlsim $projpwd/simulation${comb}t$[$counter_in-1].xml $projpwd/simulation.csv
+    python3 $nmlpwd/chartToFile.py $projpwd/simulation.csv $plotpwd/bashSims/$comb.png ${output_mags[*]}
 done
 
 ############### simulation execution and plotting section ##############

@@ -1,3 +1,0 @@
-/home/miki/misc/scriptsnano /home/miki/misc/scriptsnano/NanomagneticLogic /home/miki/misc/scriptsnano
--0.99-0.99 -0.9900.99 00.99-0.99 00.9900.99
-000 001 010 011 100 101 110 0.990.990.99
